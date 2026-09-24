@@ -56,37 +56,51 @@ pub fn setup_settings_page(model_ptr: AppModelPtr, view: &AsampoView) {
     update_settings_page(model_ptr.clone(), view);
 
     view.settings_output_sample_rate_entry
-        .connect_selected_item_notify(
-            clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::DropDown| {
-                update(model_ptr.clone(), &view, AppMessage::SettingsOutputSampleRateChanged(
-                    strs_dropdown_get_selected(e)
-                ))
-            }),
-        );
+        .connect_selected_item_notify(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |e: &gtk::DropDown| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::SettingsOutputSampleRateChanged(strs_dropdown_get_selected(e)),
+                )
+            }
+        ));
 
-    view.settings_buffer_size_entry.connect_value_changed(
-        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::SpinButton| {
-            update(
-                model_ptr.clone(),
-                &view,
-                AppMessage::SettingsBufferSizeChanged(e.value() as u16)
-            )
-        }),
-    );
+    view.settings_buffer_size_entry
+        .connect_value_changed(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |e: &gtk::SpinButton| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::SettingsBufferSizeChanged(e.value() as u16),
+                )
+            }
+        ));
 
     macro_rules! connect_changed {
         ($entry:ident, $message:ident) => {
-            view.$entry
-                .connect_selected_item_notify(
-                    clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::DropDown| {
-                        update(
-                            model_ptr.clone(),
-                            &view,
-                            AppMessage::$message(strs_dropdown_get_selected(e))
-                        )
-                    }),
-                );
-        }
+            view.$entry.connect_selected_item_notify(clone!(
+                #[strong]
+                model_ptr,
+                #[strong]
+                view,
+                move |e: &gtk::DropDown| {
+                    update(
+                        model_ptr.clone(),
+                        &view,
+                        AppMessage::$message(strs_dropdown_get_selected(e)),
+                    )
+                }
+            ));
+        };
     }
 
     connect_changed!(

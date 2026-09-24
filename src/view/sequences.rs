@@ -21,11 +21,15 @@ use crate::{
 pub fn setup_sequences_page(model_ptr: AppModelPtr, view: &AsampoView) {
     setup_drum_machine_view(model_ptr.clone(), view);
 
-    view.sequences_add_sequence_button.connect_clicked(
-        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
+    view.sequences_add_sequence_button.connect_clicked(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::AddSequenceClicked);
-        }),
-    );
+        }
+    ));
 
     model_ptr.with_model(|model| {
         update_sequences_list(model_ptr.clone(), &model, view);
@@ -62,9 +66,13 @@ pub fn update_sequences_list(model_ptr: AppModelPtr, model: &AppModel, view: &As
 
         let clicked = GestureClick::new();
 
-        clicked.connect_pressed(clone!(#[weak] row, move |_, _, _, _| {
-            row.activate();
-        }));
+        clicked.connect_pressed(clone!(
+            #[weak]
+            row,
+            move |_, _, _, _| {
+                row.activate();
+            }
+        ));
 
         name_label.add_controller(clicked);
 
@@ -72,15 +80,31 @@ pub fn update_sequences_list(model_ptr: AppModelPtr, model: &AppModel, view: &As
             .object::<gtk::Button>(format!("{uuid}-delete-button"))
             .unwrap();
 
-        delete_button.connect_clicked(
-            clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid, move |_| {
-                update(model_ptr.clone(), &view, AppMessage::SequenceDeleteClicked(uuid))
-            }),
-        );
+        delete_button.connect_clicked(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            #[strong]
+            uuid,
+            move |_| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::SequenceDeleteClicked(uuid),
+                )
+            }
+        ));
 
         let keyup = EventControllerKey::new();
 
-        keyup.connect_key_released(clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid,
+        keyup.connect_key_released(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            #[strong]
+            uuid,
             move |_: &EventControllerKey, _, _, _| {
                 update(model_ptr.clone(), &view, AppMessage::SequenceSelected(uuid));
             }
@@ -96,11 +120,17 @@ pub fn update_sequences_list(model_ptr: AppModelPtr, model: &AppModel, view: &As
             row.activate();
         }
 
-        row.connect_activate(
-            clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid, move |_: &gtk::ListBoxRow| {
+        row.connect_activate(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            #[strong]
+            uuid,
+            move |_: &gtk::ListBoxRow| {
                 update(model_ptr.clone(), &view, AppMessage::SequenceSelected(uuid));
-            }),
-        );
+            }
+        ));
     }
 }
 
@@ -123,19 +153,33 @@ fn setup_drum_machine_view(model_ptr: AppModelPtr, view: &AsampoView) {
 
     macro_rules! connect {
         (spinner $name:expr, $x:ident => $message:expr) => {
-            objects.object::<SpinButton>($name).unwrap().connect_value_changed(
-                clone!(#[strong] model_ptr, #[strong] view, move |$x: &SpinButton| {
-                    update(model_ptr.clone(), &view, $message);
-                })
-            );
+            objects
+                .object::<SpinButton>($name)
+                .unwrap()
+                .connect_value_changed(clone!(
+                    #[strong]
+                    model_ptr,
+                    #[strong]
+                    view,
+                    move |$x: &SpinButton| {
+                        update(model_ptr.clone(), &view, $message);
+                    }
+                ));
         };
 
         (button $name:expr, $message:expr) => {
-            objects.object::<Button>($name).unwrap().connect_clicked(
-                clone!(#[strong] model_ptr, #[strong] view, move |_: &Button| {
-                    update(model_ptr.clone(), &view, $message);
-                })
-            );
+            objects
+                .object::<Button>($name)
+                .unwrap()
+                .connect_clicked(clone!(
+                    #[strong]
+                    model_ptr,
+                    #[strong]
+                    view,
+                    move |_: &Button| {
+                        update(model_ptr.clone(), &view, $message);
+                    }
+                ));
         };
     }
 
@@ -205,15 +249,19 @@ fn setup_drum_machine_view(model_ptr: AppModelPtr, view: &AsampoView) {
         let gest = GestureClick::new();
         gest.set_propagation_phase(gtk::PropagationPhase::Capture);
 
-        gest.connect_pressed(
-            clone!(#[strong] model_ptr, #[strong] view, move |e: &GestureClick, _, _, _| {
+        gest.connect_pressed(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |e: &GestureClick, _, _, _| {
                 update(
                     model_ptr.clone(),
                     &view,
-                    AppMessage::DrumMachinePartClicked(index, e.current_event_state())
+                    AppMessage::DrumMachinePartClicked(index, e.current_event_state()),
                 );
-            }),
-        );
+            }
+        ));
 
         partbut.add_controller(gest);
         part_buttons.push(partbut);
