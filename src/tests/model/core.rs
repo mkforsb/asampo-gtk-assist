@@ -104,7 +104,7 @@ fn test_add_insert_set_failure_uuid_in_use() {
 #[test]
 fn test_add_source_failure_uuid_exists() {
     bolero_test!(|model| {
-        for (uuid, _) in model.sources_map().iter() {
+        for uuid in model.sources_map().keys() {
             assert!(model
                 .clone()
                 .add_source(Source::FakeSource(FakeSource {
@@ -979,7 +979,7 @@ fn test_sets_map_and_set() {
 #[test]
 fn test_source() {
     bolero_test!(|model| {
-        for (uuid, _) in model.sources_map().iter() {
+        for uuid in model.sources_map().keys() {
             assert!(model.source(*uuid).is_ok());
         }
     })

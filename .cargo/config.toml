@@ -1,0 +1,3 @@
+[env]
+# libsamplerate-sys bundles a CMakeLists.txt requiring CMake < 3.5, which CMake 4 rejects
+CMAKE_POLICY_VERSION_MINIMUM = "3.5"
