@@ -138,10 +138,14 @@ fn main() -> ExitCode {
         .flags(ApplicationFlags::HANDLES_COMMAND_LINE)
         .build();
 
-    app.connect_command_line(clone!(@strong app =>  move |_, _| {
-        app.activate();
-        0
-    }));
+    app.connect_command_line(clone!(
+        #[strong]
+        app,
+        move |_, _| {
+            app.activate();
+            ExitCode::SUCCESS
+        }
+    ));
 
     app.connect_activate(|app| {
         // init css
@@ -217,16 +221,30 @@ fn main() -> ExitCode {
 
         build_actions(app, model_ptr.clone(), &view);
 
-        view.titlebar_stop_button.connect_clicked(
-            clone!(@strong model_ptr, @strong view => move |_| {
-                update(model_ptr.clone(), &view, AppMessage::StopAllSoundButtonClicked);
-            }),
-        );
+        view.titlebar_stop_button.connect_clicked(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |_| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::StopAllSoundButtonClicked,
+                );
+            }
+        ));
 
-        view.connect_close_request(clone!(@strong model_ptr, @strong view => move |_| {
-            update(model_ptr.clone(), &view, AppMessage::QuitRequested);
-            gtk::glib::Propagation::Stop
-        }));
+        view.connect_close_request(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |_| {
+                update(model_ptr.clone(), &view, AppMessage::QuitRequested);
+                gtk::glib::Propagation::Stop
+            }
+        ));
 
         view.present();
 

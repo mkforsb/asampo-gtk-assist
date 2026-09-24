@@ -13,47 +13,76 @@ use crate::{
 };
 
 pub fn setup_sources_page(model_ptr: AppModelPtr, view: &AsampoView) {
-    view.sources_add_fs_name_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+    view.sources_add_fs_name_entry.connect_changed(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
-                AppMessage::AddFilesystemSourceNameChanged(e.text().to_string())
+                AppMessage::AddFilesystemSourceNameChanged(e.text().to_string()),
             );
-        }),
-    );
+        }
+    ));
 
-    view.sources_add_fs_path_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+    view.sources_add_fs_path_entry.connect_changed(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
-                AppMessage::AddFilesystemSourcePathChanged(e.text().to_string())
+                AppMessage::AddFilesystemSourcePathChanged(e.text().to_string()),
             );
-        }),
-    );
+        }
+    ));
 
-    view.sources_add_fs_path_browse_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
-            update(model_ptr.clone(), &view, AppMessage::AddFilesystemSourcePathBrowseClicked);
-        }),
-    );
+    view.sources_add_fs_path_browse_button
+        .connect_clicked(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |_: &gtk::Button| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::AddFilesystemSourcePathBrowseClicked,
+                );
+            }
+        ));
 
-    view.sources_add_fs_extensions_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+    view.sources_add_fs_extensions_entry.connect_changed(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
-                AppMessage::AddFilesystemSourceExtensionsChanged(e.text().to_string())
+                AppMessage::AddFilesystemSourceExtensionsChanged(e.text().to_string()),
             );
-        }),
-    );
+        }
+    ));
 
-    view.sources_add_fs_add_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
-            update(model_ptr.clone(), &view, AppMessage::AddFilesystemSourceClicked);
-        }),
-    );
+    view.sources_add_fs_add_button.connect_clicked(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |_: &gtk::Button| {
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::AddFilesystemSourceClicked,
+            );
+        }
+    ));
 }
 
 pub fn update_sources_list(model_ptr: AppModelPtr, model: AppModel, view: &AsampoView) {
@@ -87,28 +116,46 @@ pub fn update_sources_list(model_ptr: AppModelPtr, model: AppModel, view: &Asamp
             enable_checkbutton.activate();
         }
 
-        enable_checkbutton.connect_toggled(
-            clone!(@strong model_ptr, @strong uuid, @strong view => move |e: &gtk::CheckButton| {
+        enable_checkbutton.connect_toggled(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            uuid,
+            #[strong]
+            view,
+            move |e: &gtk::CheckButton| {
                 if e.is_active() {
                     update(model_ptr.clone(), &view, AppMessage::SourceEnabled(uuid))
                 } else {
                     update(model_ptr.clone(), &view, AppMessage::SourceDisabled(uuid))
                 }
-            }),
-        );
+            }
+        ));
 
         name_label.set_label(model.source(*uuid).unwrap().name().unwrap_or("Unnamed"));
 
-        delete_button.connect_clicked(
-            clone!(@strong model_ptr, @strong view, @strong uuid => move |_: &gtk::Button| {
-                update(model_ptr.clone(), &view, AppMessage::SourceDeleteClicked(uuid));
-            }),
-        );
+        delete_button.connect_clicked(clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            #[strong]
+            uuid,
+            move |_: &gtk::Button| {
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::SourceDeleteClicked(uuid),
+                );
+            }
+        ));
 
         let clicked = GestureClick::new();
 
         clicked.connect_pressed(|e: &GestureClick, _, _, _| {
-            e.widget().activate();
+            if let Some(widget) = e.widget() {
+                widget.activate();
+            }
         });
 
         row.add_controller(clicked);

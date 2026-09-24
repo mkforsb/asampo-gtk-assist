@@ -42,17 +42,28 @@ pub fn choose_folder(
     dialog.select_folder(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
-            match result {
-                Ok(gfile) => update(
-                    model_ptr.clone(),
-                    &view,
-                    ok(gfile.path().unwrap().into_os_string().into_string().unwrap())
-                ),
+        clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |result| {
+                match result {
+                    Ok(gfile) => update(
+                        model_ptr.clone(),
+                        &view,
+                        ok(gfile
+                            .path()
+                            .unwrap()
+                            .into_os_string()
+                            .into_string()
+                            .unwrap()),
+                    ),
 
-                Err(e) => update(model_ptr.clone(), &view, err(e)),
+                    Err(e) => update(model_ptr.clone(), &view, err(e)),
+                }
             }
-        }),
+        ),
     );
 
     update(
@@ -106,59 +117,105 @@ pub fn input(
     let cancelbutton = objects.object::<gtk::Button>("cancel-button").unwrap();
 
     okbutton.connect_clicked(clone!(
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin,
-        @strong context => move |_: &gtk::Button| {
-            update(model_ptr.clone(), &view, AppMessage::InputDialogSubmitted(
-                context.clone(),
-                util::gtk_find_child_by_builder_id::<gtk::Entry>(&dialogwin, "input")
-                    .unwrap()
-                    .text()
-                    .to_string()
-            ));
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        #[strong]
+        dialogwin,
+        #[strong]
+        context,
+        move |_: &gtk::Button| {
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::InputDialogSubmitted(
+                    context.clone(),
+                    util::gtk_find_child_by_builder_id::<gtk::Entry>(&dialogwin, "input")
+                        .unwrap()
+                        .text()
+                        .to_string(),
+                ),
+            );
 
             view.set_sensitive(true);
             dialogwin.destroy();
         }
     ));
 
-    input.connect_activate(clone!(@strong okbutton => move |_| {
-        okbutton.emit_clicked();
-    }));
+    input.connect_activate(clone!(
+        #[strong]
+        okbutton,
+        move |_| {
+            okbutton.emit_clicked();
+        }
+    ));
 
     cancelbutton.connect_clicked(clone!(
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin,
-        @strong context => move |_: &gtk::Button| {
-            update(model_ptr.clone(), &view, AppMessage::InputDialogCanceled(context.clone()));
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        #[strong]
+        dialogwin,
+        #[strong]
+        context,
+        move |_: &gtk::Button| {
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::InputDialogCanceled(context.clone()),
+            );
             view.set_sensitive(true);
             dialogwin.destroy();
         }
     ));
 
-    dialogwin.connect_show(
-        clone!(@strong model_ptr, @strong view, @strong context => move |_: &gtk::Window| {
+    dialogwin.connect_show(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        #[strong]
+        context,
+        move |_: &gtk::Window| {
             view.set_sensitive(false);
-            update(model_ptr.clone(), &view, AppMessage::InputDialogOpened(context.clone()));
-        }),
-    );
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::InputDialogOpened(context.clone()),
+            );
+        }
+    ));
 
-    dialogwin.connect_close_request(
-        clone!(@strong model_ptr, @strong view, @strong context => move |_: &gtk::Window| {
-            update(model_ptr.clone(), &view, AppMessage::InputDialogCanceled(context.clone()));
+    dialogwin.connect_close_request(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        #[strong]
+        context,
+        move |_: &gtk::Window| {
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::InputDialogCanceled(context.clone()),
+            );
             view.set_sensitive(true);
             Propagation::Proceed
-        }),
-    );
+        }
+    ));
 
     let key_ctrl = EventControllerKey::new();
-    key_ctrl.connect_key_released(clone!(@weak dialogwin => move |_, key, _, _| {
-        if key == gtk::gdk::Key::Escape {
-            dialogwin.close();
+    key_ctrl.connect_key_released(clone!(
+        #[weak]
+        dialogwin,
+        move |_, key, _, _| {
+            if key == gtk::gdk::Key::Escape {
+                dialogwin.close();
+            }
         }
-    }));
+    ));
 
     dialogwin.add_controller(key_ctrl);
 
@@ -213,67 +270,104 @@ pub fn sampleset_export(model_ptr: AppModelPtr, view: &AsampoView, model: AppMod
         }
     }
 
-    target_dir_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+    target_dir_entry.connect_changed(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
-                AppMessage::ExportTargetDirectoryChanged(e.text().to_string())
+                AppMessage::ExportTargetDirectoryChanged(e.text().to_string()),
             );
-        }),
-    );
+        }
+    ));
 
-    browse_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
-            update(model_ptr.clone(), &view, AppMessage::ExportTargetDirectoryBrowseClicked);
-        }),
-    );
+    browse_button.connect_clicked(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |_: &gtk::Button| {
+            update(
+                model_ptr.clone(),
+                &view,
+                AppMessage::ExportTargetDirectoryBrowseClicked,
+            );
+        }
+    ));
 
     export_button.connect_clicked(clone!(
-        @weak dialogwin,
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin => move |_: &gtk::Button| {
+        #[weak]
+        dialogwin,
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        #[strong]
+        dialogwin,
+        move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::PerformExportClicked);
             dialogwin.close()
         }
     ));
 
-    cancel_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view, @strong dialogwin => move |_: &gtk::Button| {
-            dialogwin.close()
-        }),
-    );
+    cancel_button.connect_clicked(clone!(
+        #[strong]
+        dialogwin,
+        move |_: &gtk::Button| dialogwin.close()
+    ));
 
-    plain_copy_radio.connect_toggled(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::CheckButton| {
+    plain_copy_radio.connect_toggled(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::CheckButton| {
             if e.is_active() {
-                update(model_ptr.clone(), &view, AppMessage::PlainCopyExportSelected);
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::PlainCopyExportSelected,
+                );
             }
-        }),
-    );
+        }
+    ));
 
-    convert_radio.connect_toggled(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::CheckButton| {
+    convert_radio.connect_toggled(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |e: &gtk::CheckButton| {
             if e.is_active() {
-                update(model_ptr.clone(), &view, AppMessage::ConversionExportSelected);
+                update(
+                    model_ptr.clone(),
+                    &view,
+                    AppMessage::ConversionExportSelected,
+                );
             }
-        }),
-    );
+        }
+    ));
 
-    dialogwin.connect_close_request(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Window| {
+    dialogwin.connect_close_request(clone!(
+        #[strong]
+        model_ptr,
+        #[strong]
+        view,
+        move |_: &gtk::Window| {
             update(
                 model_ptr.clone(),
                 &view,
                 AppMessage::Sequence(vec![
                     AppMessage::DialogClosed,
-                    AppMessage::ExportDialogClosed
-                ])
+                    AppMessage::ExportDialogClosed,
+                ]),
             );
             Propagation::Proceed
-        }),
-    );
+        }
+    ));
 
     dialogwin.set_modal(true);
     dialogwin.set_transient_for(Some(view));
@@ -360,22 +454,28 @@ pub fn confirm(
     dialog.choose(
         Some(view),
         None::<&gtk::gio::Cancellable>,
-        clone!(@strong model_ptr, @strong view => move |result: Result<i32, gtk::glib::Error>| {
-            match result {
-                Ok(n) if n >= 0 && n < buttons.len() as i32 => {
-                    update(model_ptr.clone(), &view, (buttons[n as usize].action)());
-                }
+        clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |result: Result<i32, gtk::glib::Error>| {
+                match result {
+                    Ok(n) if n >= 0 && n < buttons.len() as i32 => {
+                        update(model_ptr.clone(), &view, (buttons[n as usize].action)());
+                    }
 
-                Ok(n) => {
-                    log::log!(
-                        log::Level::Error,
-                        "Unexpected index returned in confirm dialog: {n}"
-                    );
-                }
+                    Ok(n) => {
+                        log::log!(
+                            log::Level::Error,
+                            "Unexpected index returned in confirm dialog: {n}"
+                        );
+                    }
 
-                Err(e) => update(model_ptr.clone(), &view, err(e)),
+                    Err(e) => update(model_ptr.clone(), &view, err(e)),
+                }
             }
-        }),
+        ),
     );
 
     update(model_ptr.clone(), view, on_open);
@@ -410,17 +510,28 @@ pub fn save(
     dialog.build().save(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
-            match result {
-                Ok(gfile) => update(
-                    model_ptr.clone(),
-                    &view,
-                    ok(gfile.path().unwrap().into_os_string().into_string().unwrap())
-                ),
+        clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |result| {
+                match result {
+                    Ok(gfile) => update(
+                        model_ptr.clone(),
+                        &view,
+                        ok(gfile
+                            .path()
+                            .unwrap()
+                            .into_os_string()
+                            .into_string()
+                            .unwrap()),
+                    ),
 
-                Err(e) => update(model_ptr.clone(), &view, err(e)),
+                    Err(e) => update(model_ptr.clone(), &view, err(e)),
+                }
             }
-        }),
+        ),
     );
 
     update(model_ptr.clone(), view, on_open);
@@ -447,17 +558,28 @@ pub fn open(
     dialog.open(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
-            match result {
-                Ok(gfile) => update(
-                    model_ptr.clone(),
-                    &view,
-                    ok(gfile.path().unwrap().into_os_string().into_string().unwrap())
-                ),
+        clone!(
+            #[strong]
+            model_ptr,
+            #[strong]
+            view,
+            move |result| {
+                match result {
+                    Ok(gfile) => update(
+                        model_ptr.clone(),
+                        &view,
+                        ok(gfile
+                            .path()
+                            .unwrap()
+                            .into_os_string()
+                            .into_string()
+                            .unwrap()),
+                    ),
 
-                Err(e) => update(model_ptr.clone(), &view, err(e)),
+                    Err(e) => update(model_ptr.clone(), &view, err(e)),
+                }
             }
-        }),
+        ),
     );
 
     update(model_ptr.clone(), view, on_open);
