@@ -9,7 +9,7 @@ use crate::{dialogs, model::AppModelPtr, view::AsampoView, AppMessage};
 pub fn build_actions(app: &Application, model_ptr: AppModelPtr, view: &AsampoView) {
     let action_open_savefile = ActionEntry::builder("open_savefile")
         .activate(
-            clone!(@strong model_ptr, @strong view => move |_app: &Application, _, _| {
+            clone!(#[strong] model_ptr, #[strong] view, move |_app: &Application, _, _| {
                 dialogs::open(
                     model_ptr.clone(),
                     &view,
@@ -23,7 +23,7 @@ pub fn build_actions(app: &Application, model_ptr: AppModelPtr, view: &AsampoVie
 
     let action_save = ActionEntry::builder("save")
         .activate(
-            clone!(@strong model_ptr, @strong view  => move |_app: &Application, _, _| {
+            clone!(#[strong] model_ptr, #[strong] view, move |_app: &Application, _, _| {
                 dialogs::save(
                     model_ptr.clone(),
                     &view,

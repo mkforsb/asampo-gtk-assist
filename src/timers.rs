@@ -13,7 +13,7 @@ use crate::{model::AppModelPtr, update, view::AsampoView, AppMessage};
 pub fn init_timertick_timer(model_ptr: AppModelPtr, view: &AsampoView) {
     gtk::glib::timeout_add_seconds_local(
         1,
-        clone!(@strong model_ptr, @strong view => move || {
+        clone!(#[strong] model_ptr, #[strong] view, move || {
             update(model_ptr.clone(), &view, AppMessage::TimerTick);
             gtk::glib::ControlFlow::Continue
         }),
@@ -24,7 +24,7 @@ pub fn init_timertick_timer(model_ptr: AppModelPtr, view: &AsampoView) {
 pub fn init_messaging_timer(model_ptr: AppModelPtr, view: &AsampoView) {
     gtk::glib::timeout_add_local(
         std::time::Duration::from_millis(50),
-        clone!(@strong model_ptr, @strong view => move || {
+        clone!(#[strong] model_ptr, #[strong] view, move || {
             let model = model_ptr.take().unwrap();
             let export_job_rx = model.export_job_rx().clone();
             let sources_loaders = model.source_loaders().clone();
@@ -121,7 +121,7 @@ pub fn init_messaging_timer(model_ptr: AppModelPtr, view: &AsampoView) {
 pub fn init_drum_machine_events_timer(model_ptr: AppModelPtr, view: &AsampoView) {
     gtk::glib::timeout_add_local(
         std::time::Duration::from_millis(4),
-        clone!(@strong model_ptr, @strong view => move || {
+        clone!(#[strong] model_ptr, #[strong] view, move || {
             let model = model_ptr.take().unwrap();
             let event = model.drum_machine_poll_event();
 

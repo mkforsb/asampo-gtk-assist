@@ -109,7 +109,7 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
     view.samples_listview.set_factory(Some(&factory));
 
     view.samples_listview
-        .connect_activate(clone!(@strong model_ptr, @strong view => move |_, _| {
+        .connect_activate(clone!(#[strong] model_ptr, #[strong] view, move |_, _| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -122,7 +122,7 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
     let clicked = GestureClick::new();
 
     clicked.connect_released(
-        clone!(@strong model_ptr, @strong view => move |_, _, _, _| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_, _, _, _| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -138,7 +138,7 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
     let keyed = EventControllerKey::new();
 
     keyed.connect_key_released(
-        clone!(@strong model_ptr, @strong view => move |_, key: gtk::gdk::Key, _, _| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_, key: gtk::gdk::Key, _, _| {
             if key == gtk::gdk::Key::Return {
                 return;
             }
@@ -156,7 +156,7 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
     view.samples_listview.add_controller(keyed);
 
     view.samples_list_filter_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -166,13 +166,13 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
     );
 
     view.samples_sidebar_add_to_set_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::SampleSidebarAddToSetClicked);
         }),
     );
 
     view.samples_sidebar_add_to_prev_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -191,7 +191,7 @@ pub fn setup_samples_page(model_ptr: AppModelPtr, view: &AsampoView) {
         )
         .unwrap()
         .connect_clicked(
-            clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+            clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
                 update(model_ptr.clone(), &view, AppMessage::AssignSampleToPadClicked(i));
                 popover.popdown();
             }),
@@ -256,10 +256,10 @@ pub fn update_samples_sidebar(model_ptr: AppModelPtr, model: AppModel, view: &As
                     .object::<gtk::Button>(format!("{uuid}-combo-button-ear"))
                     .unwrap()
                     .connect_clicked(clone!(
-                        @strong model_ptr,
-                        @strong view,
-                        @strong sample,
-                        @strong uuid => move |_| {
+                        #[strong] model_ptr,
+                        #[strong] view,
+                        #[strong] sample,
+                        #[strong] uuid, move |_| {
                             update(
                                 model_ptr.clone(),
                                 &view,

@@ -97,18 +97,18 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
     }
 
     view.sets_add_set_button
-        .connect_clicked(clone!(@strong model_ptr, @strong view => move |_| {
+        .connect_clicked(clone!(#[strong] model_ptr, #[strong] view, move |_| {
             update(model_ptr.clone(), &view, AppMessage::AddSampleSetClicked);
         }));
 
     view.sets_details_load_drum_machine_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::SampleSetDetailsLoadInDrumMachineClicked);
         }),
     );
 
     view.sets_details_export_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::SampleSetDetailsExportClicked);
         }),
     );
@@ -122,9 +122,9 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
     let factory = gtk::SignalListItemFactory::new();
 
     factory.connect_setup(clone!(
-        @strong model_ptr,
-        @strong view,
-        @weak selectmodel => move |_, list_item| {
+        #[strong] model_ptr,
+        #[strong] view,
+        #[weak] selectmodel, move |_, list_item| {
             let list_item = list_item.downcast_ref::<gtk::ListItem>().expect("ListItem");
             let rowbox = gtk::Box::new(Orientation::Horizontal, 0);
             rowbox.set_homogeneous(false);
@@ -142,13 +142,13 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
             let clicked = GestureClick::new();
 
             clicked.connect_released(
-                clone!(@strong model_ptr, @strong view, @weak selectmodel => move |_, _, _, _| {
+                clone!(#[strong] model_ptr, #[strong] view, #[weak] selectmodel, move |_, _, _, _| {
                     select_member(model_ptr.clone(), &view, &selectmodel);
                 }),
             );
 
             clicked.connect_unpaired_release(
-                clone!(@strong model_ptr, @strong view, @weak selectmodel => move |_, _, _, _, _| {
+                clone!(#[strong] model_ptr, #[strong] view, #[weak] selectmodel, move |_, _, _, _, _| {
                     select_member(model_ptr.clone(), &view, &selectmodel);
                 }),
             );
@@ -161,7 +161,7 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
         }
     ));
 
-    factory.connect_bind(clone!(@weak model_ptr, @weak view => move |_, list_item| {
+    factory.connect_bind(clone!(#[weak] model_ptr, #[weak] view, move |_, list_item| {
         let list_item = list_item.downcast_ref::<gtk::ListItem>().expect("ListItem");
 
         let rowbox = list_item
@@ -235,10 +235,10 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
             label_select_button.set_child(Some(&label_select_button_inner_box));
 
             label_select_button.connect_clicked(clone!(
-                @weak model_ptr,
-                @weak view,
-                @strong sample,
-                @strong set_uuid => move |sel_but: &gtk::Button| {
+                #[weak] model_ptr,
+                #[weak] view,
+                #[strong] sample,
+                #[strong] set_uuid, move |sel_but: &gtk::Button| {
                     let popover = gtk::Popover::new();
                     popover.add_css_class("label-select-popover");
 
@@ -259,10 +259,10 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
                         button.set_halign(gtk::Align::Fill);
 
                         button.connect_clicked(clone!(
-                            @weak model_ptr,
-                            @weak view,
-                            @weak popover,
-                            @strong sample => move |_| {
+                            #[weak] model_ptr,
+                            #[weak] view,
+                            #[weak] popover,
+                            #[strong] sample, move |_| {
                                 popover.popdown();
 
                                 model_ptr.with_model(|model|
@@ -328,10 +328,10 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
             delete_button.set_icon_name("user-trash-symbolic");
 
             delete_button.connect_clicked(clone!(
-                @weak model_ptr,
-                @weak view,
-                @strong sample,
-                @strong set_uuid => move |_| {
+                #[weak] model_ptr,
+                #[weak] view,
+                #[strong] sample,
+                #[strong] set_uuid, move |_| {
                     model_ptr.with_model(|model| {
                         model.signal(Signal::SkipNextSampleSetMemberListUpdate)
                     });
@@ -377,9 +377,9 @@ pub fn setup_sets_page(model_ptr: AppModelPtr, view: &AsampoView) {
     let keyed = EventControllerKey::new();
 
     keyed.connect_key_released(clone!(
-        @strong model_ptr,
-        @strong view,
-        @weak selectmodel => move |_, key: gtk::gdk::Key, _, _| {
+        #[strong] model_ptr,
+        #[strong] view,
+        #[weak] selectmodel, move |_, key: gtk::gdk::Key, _, _| {
             if key == gtk::gdk::Key::Return {
                 return;
             }
@@ -417,7 +417,7 @@ pub fn update_samplesets_list(model_ptr: AppModelPtr, model: AppModel, view: &As
 
         let clicked = GestureClick::new();
 
-        clicked.connect_pressed(clone!(@weak row => move |_, _, _, _| {
+        clicked.connect_pressed(clone!(#[weak] row, move |_, _, _, _| {
             row.activate();
         }));
 
@@ -428,14 +428,14 @@ pub fn update_samplesets_list(model_ptr: AppModelPtr, model: AppModel, view: &As
             .unwrap();
 
         delete_button.connect_clicked(
-            clone!(@strong model_ptr, @strong view, @strong uuid => move |_| {
+            clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid, move |_| {
                 update(model_ptr.clone(), &view, AppMessage::SampleSetDeleteClicked(uuid))
             }),
         );
 
         let keyup = EventControllerKey::new();
 
-        keyup.connect_key_released(clone!(@strong model_ptr, @strong view, @strong uuid =>
+        keyup.connect_key_released(clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid,
             move |_: &EventControllerKey, _, _, _| {
                 update(model_ptr.clone(), &view, AppMessage::SampleSetSelected(uuid));
             }
@@ -450,7 +450,7 @@ pub fn update_samplesets_list(model_ptr: AppModelPtr, model: AppModel, view: &As
         }
 
         row.connect_activate(
-            clone!(@strong model_ptr, @strong view, @strong uuid => move |_: &gtk::ListBoxRow| {
+            clone!(#[strong] model_ptr, #[strong] view, #[strong] uuid, move |_: &gtk::ListBoxRow| {
                 update(model_ptr.clone(), &view, AppMessage::SampleSetSelected(uuid));
             }),
         );

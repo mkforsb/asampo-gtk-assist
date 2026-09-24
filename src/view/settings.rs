@@ -57,7 +57,7 @@ pub fn setup_settings_page(model_ptr: AppModelPtr, view: &AsampoView) {
 
     view.settings_output_sample_rate_entry
         .connect_selected_item_notify(
-            clone!(@strong model_ptr, @strong view => move |e: &gtk::DropDown| {
+            clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::DropDown| {
                 update(model_ptr.clone(), &view, AppMessage::SettingsOutputSampleRateChanged(
                     strs_dropdown_get_selected(e)
                 ))
@@ -65,7 +65,7 @@ pub fn setup_settings_page(model_ptr: AppModelPtr, view: &AsampoView) {
         );
 
     view.settings_buffer_size_entry.connect_value_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::SpinButton| {
+        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::SpinButton| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -78,7 +78,7 @@ pub fn setup_settings_page(model_ptr: AppModelPtr, view: &AsampoView) {
         ($entry:ident, $message:ident) => {
             view.$entry
                 .connect_selected_item_notify(
-                    clone!(@strong model_ptr, @strong view => move |e: &gtk::DropDown| {
+                    clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::DropDown| {
                         update(
                             model_ptr.clone(),
                             &view,

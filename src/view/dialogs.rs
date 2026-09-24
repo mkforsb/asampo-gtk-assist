@@ -42,7 +42,7 @@ pub fn choose_folder(
     dialog.select_folder(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
+        clone!(#[strong] model_ptr, #[strong] view, move |result| {
             match result {
                 Ok(gfile) => update(
                     model_ptr.clone(),
@@ -106,10 +106,10 @@ pub fn input(
     let cancelbutton = objects.object::<gtk::Button>("cancel-button").unwrap();
 
     okbutton.connect_clicked(clone!(
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin,
-        @strong context => move |_: &gtk::Button| {
+        #[strong] model_ptr,
+        #[strong] view,
+        #[strong] dialogwin,
+        #[strong] context, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::InputDialogSubmitted(
                 context.clone(),
                 util::gtk_find_child_by_builder_id::<gtk::Entry>(&dialogwin, "input")
@@ -123,15 +123,15 @@ pub fn input(
         }
     ));
 
-    input.connect_activate(clone!(@strong okbutton => move |_| {
+    input.connect_activate(clone!(#[strong] okbutton, move |_| {
         okbutton.emit_clicked();
     }));
 
     cancelbutton.connect_clicked(clone!(
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin,
-        @strong context => move |_: &gtk::Button| {
+        #[strong] model_ptr,
+        #[strong] view,
+        #[strong] dialogwin,
+        #[strong] context, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::InputDialogCanceled(context.clone()));
             view.set_sensitive(true);
             dialogwin.destroy();
@@ -139,14 +139,14 @@ pub fn input(
     ));
 
     dialogwin.connect_show(
-        clone!(@strong model_ptr, @strong view, @strong context => move |_: &gtk::Window| {
+        clone!(#[strong] model_ptr, #[strong] view, #[strong] context, move |_: &gtk::Window| {
             view.set_sensitive(false);
             update(model_ptr.clone(), &view, AppMessage::InputDialogOpened(context.clone()));
         }),
     );
 
     dialogwin.connect_close_request(
-        clone!(@strong model_ptr, @strong view, @strong context => move |_: &gtk::Window| {
+        clone!(#[strong] model_ptr, #[strong] view, #[strong] context, move |_: &gtk::Window| {
             update(model_ptr.clone(), &view, AppMessage::InputDialogCanceled(context.clone()));
             view.set_sensitive(true);
             Propagation::Proceed
@@ -154,7 +154,7 @@ pub fn input(
     );
 
     let key_ctrl = EventControllerKey::new();
-    key_ctrl.connect_key_released(clone!(@weak dialogwin => move |_, key, _, _| {
+    key_ctrl.connect_key_released(clone!(#[weak] dialogwin, move |_, key, _, _| {
         if key == gtk::gdk::Key::Escape {
             dialogwin.close();
         }
@@ -214,7 +214,7 @@ pub fn sampleset_export(model_ptr: AppModelPtr, view: &AsampoView, model: AppMod
     }
 
     target_dir_entry.connect_changed(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::Entry| {
+        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::Entry| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -224,29 +224,25 @@ pub fn sampleset_export(model_ptr: AppModelPtr, view: &AsampoView, model: AppMod
     );
 
     browse_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Button| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::ExportTargetDirectoryBrowseClicked);
         }),
     );
 
     export_button.connect_clicked(clone!(
-        @weak dialogwin,
-        @strong model_ptr,
-        @strong view,
-        @strong dialogwin => move |_: &gtk::Button| {
+        #[weak] dialogwin,
+        #[strong] model_ptr,
+        #[strong] view,
+        #[strong] dialogwin, move |_: &gtk::Button| {
             update(model_ptr.clone(), &view, AppMessage::PerformExportClicked);
             dialogwin.close()
         }
     ));
 
-    cancel_button.connect_clicked(
-        clone!(@strong model_ptr, @strong view, @strong dialogwin => move |_: &gtk::Button| {
-            dialogwin.close()
-        }),
-    );
+    cancel_button.connect_clicked(clone!(#[strong] dialogwin, move |_: &gtk::Button| dialogwin.close()));
 
     plain_copy_radio.connect_toggled(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::CheckButton| {
+        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::CheckButton| {
             if e.is_active() {
                 update(model_ptr.clone(), &view, AppMessage::PlainCopyExportSelected);
             }
@@ -254,7 +250,7 @@ pub fn sampleset_export(model_ptr: AppModelPtr, view: &AsampoView, model: AppMod
     );
 
     convert_radio.connect_toggled(
-        clone!(@strong model_ptr, @strong view => move |e: &gtk::CheckButton| {
+        clone!(#[strong] model_ptr, #[strong] view, move |e: &gtk::CheckButton| {
             if e.is_active() {
                 update(model_ptr.clone(), &view, AppMessage::ConversionExportSelected);
             }
@@ -262,7 +258,7 @@ pub fn sampleset_export(model_ptr: AppModelPtr, view: &AsampoView, model: AppMod
     );
 
     dialogwin.connect_close_request(
-        clone!(@strong model_ptr, @strong view => move |_: &gtk::Window| {
+        clone!(#[strong] model_ptr, #[strong] view, move |_: &gtk::Window| {
             update(
                 model_ptr.clone(),
                 &view,
@@ -360,7 +356,7 @@ pub fn confirm(
     dialog.choose(
         Some(view),
         None::<&gtk::gio::Cancellable>,
-        clone!(@strong model_ptr, @strong view => move |result: Result<i32, gtk::glib::Error>| {
+        clone!(#[strong] model_ptr, #[strong] view, move |result: Result<i32, gtk::glib::Error>| {
             match result {
                 Ok(n) if n >= 0 && n < buttons.len() as i32 => {
                     update(model_ptr.clone(), &view, (buttons[n as usize].action)());
@@ -410,7 +406,7 @@ pub fn save(
     dialog.build().save(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
+        clone!(#[strong] model_ptr, #[strong] view, move |result| {
             match result {
                 Ok(gfile) => update(
                     model_ptr.clone(),
@@ -447,7 +443,7 @@ pub fn open(
     dialog.open(
         Some(view),
         None::<gtk::gio::Cancellable>.as_ref(),
-        clone!(@strong model_ptr, @strong view => move |result| {
+        clone!(#[strong] model_ptr, #[strong] view, move |result| {
             match result {
                 Ok(gfile) => update(
                     model_ptr.clone(),
